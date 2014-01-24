@@ -57,7 +57,6 @@ void* task_server_client(void *int_sock){
 		char *request=server.client_read(sock);
 		
 		if(request==0){ //disconect
-			printf("aha");
 			break;
 		}
 
@@ -236,6 +235,11 @@ int main (int argc, char **argv) {
 		perror("arduino problem (nie ma powitania)");
 		return 1;
 	}else{
+	
+		string server_string = "server date: "+string(__DATE__)+"\n";
+		
+		powitanie = server_string+powitanie;
+	
 		myprint((char*)powitanie.c_str());//pokaz powiadomienie
 	}
 	//--
