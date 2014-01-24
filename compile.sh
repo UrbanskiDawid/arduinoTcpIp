@@ -9,7 +9,7 @@ g++ main.cpp -std=c++0x -lrt -lpthread
 if [ $? -eq 0 ]
 then
 	echo "commit"
-	./git.sh &
+	bash git.sh >/dev/null 2>&1 &
 
 	echo "run"
 	./a.out
