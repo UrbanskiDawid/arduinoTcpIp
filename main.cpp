@@ -236,9 +236,9 @@ int main (int argc, char **argv) {
 		return 1;
 	}else{
 	
-		string server_string = "server date: "+string(__DATE__)+"\n";
-		
-		powitanie = server_string+powitanie;
+		powitanie = 
+			"server date version: "+string(__DATE__)+"\n"
+			+powitanie;
 	
 		myprint((char*)powitanie.c_str());//pokaz powiadomienie
 	}
