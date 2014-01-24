@@ -67,6 +67,7 @@ void* task_server_client(void *int_sock){
 	server.client_close(sock);
 }
 
+//polaczenie nowego klienta/połączenia -> tworzymy nowy wątek dla niego
 void server_onNewClient(int sock){
 
 	int a=sock;
@@ -74,7 +75,7 @@ void server_onNewClient(int sock){
 	pthread_create(&t,NULL,task_server_client,(void*)a);
 }
 
-//zdanie obsugi servera
+//wątek obsugi servera
 void* task_server(void *arg){
 
 	printf("server runing at port %d\n",server.getPort());

@@ -93,12 +93,10 @@ public:
 		int n=read(sock,buffer,255);
 		if(n<1)
 		{
-			//perror("read() fail");
+			//perror("read() fail (disconected?)");
 			return 0;
 		}
 		if(buffer[n-1]==(char)'\n')buffer[n-1]=(char)0;
-		
-		//buffer[n-2]=(char)0;
 		
 		return buffer;
 	}
