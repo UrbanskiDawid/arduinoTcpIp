@@ -41,21 +41,20 @@ void Add(char *msg,int sock=-1){
 //server
 //##########################################
 void server_onNewClient(int);
-static TcpSercer * server;
-int TcpSercer_defaultport = 3333;
+static TcpSercer server(3333,server_onNewClient);
 
 //obsluga clienta
 void* task_server_client(void *int_sock){
 
 	int sock = ((int)int_sock);
 
-	server->client_write(sock,(char*)powitanie.c_str());
-	server->client_write(sock,(char*)"\n>>");
+	server.client_write(sock,(char*)powitanie.c_str());
+	server.client_write(sock,(char*)"\n>>");
 
 	while(true)
 	{
 		//odczytaj zapytanie
-		char *request=server->client_read(sock);
+		char *request=server.client_read(sock);
 		
 		if(request==0){ //disconect
 			break;
@@ -65,7 +64,7 @@ void* task_server_client(void *int_sock){
 		Add(request,sock);
 	}
 	
-	server->client_close(sock);
+	server.client_close(sock);
 }
 
 void server_onNewClient(int sock){
@@ -78,8 +77,8 @@ void server_onNewClient(int sock){
 //zdanie obsugi servera
 void* task_server(void *arg){
 
-	printf("server runing at port %d\n",server->getPort());
-	server->run();
+	printf("server runing at port %d\n",server.getPort());
+	server.run();
 }
 //##########################################
 
@@ -144,7 +143,7 @@ void* task_execute(void *){
 
 					if(m.sock!=-1){//TPC
 					
-						server->client_write(m.sock,(char*)odpowiedz.c_str());
+						server.client_write(m.sock,(char*)odpowiedz.c_str());
 					}
 				//-----
 			}
@@ -185,7 +184,7 @@ void sighandler(int sig){
 
 	cout<< "Signal " << sig << " caught...exiting" << endl;
 
-		server->stop();
+		server.stop();
 		
 		ARDUINO->close();
 		
@@ -208,7 +207,7 @@ int main (int argc, char **argv) {
 
 	//##
 	//sprawdz czy server uruchomiony
-	if(!server->isBinded())
+	if(!server.isBinded())
 	{
 		perror("server problem");
 		return 1;
@@ -247,12 +246,6 @@ int main (int argc, char **argv) {
 
 	//tworze watek tcpip
 	pthread_t t1;
-	
-	if(argc==1)	
-		server = new TcpSercer(atoi(argv[1]),server_onNewClient);
-	else
-		server = new TcpSercer(TcpSercer_defaultport,server_onNewClient);
-
 	pthread_create(&t1,NULL,task_server,NULL);
 	//--
 
