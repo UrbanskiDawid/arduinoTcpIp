@@ -8,9 +8,8 @@ g++ main.cpp -std=c++0x -lrt -lpthread
 
 if [ $? -eq 0 ]
 then
-	echo "commit"	
-	git commit -a -m "kompilacja"
-	git push
+	echo "commit"
+	./git.sh &
 
 	echo "run"
 	./a.out
