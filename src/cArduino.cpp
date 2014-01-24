@@ -24,6 +24,9 @@ Serial Conection Based On:
 #include <string.h>
 #include <unistd.h>
 
+#include <termios.h>
+#include <unistd.h>
+
 #include <string>
 #include <sys/types.h>
 #include <dirent.h>
@@ -35,20 +38,20 @@ Serial Conection Based On:
 	#include <sys/time.h>  
 using namespace std;
 
+//srs: http://arduino.cc/en/Serial/begin
 enum ArduinoBaundRate{
-
   B300bps  = B300,
   B600bps  = B600,
   B1200bps = B1200,
   B2400bps = B2400,
   B4800bps = B4800,
   B9600bps = B9600,
-//B14400bps= B14400,
-  B19200bps=B19200,
-//B28800bps=B28800
-//B38400bps=38400
-//B57600bps=57600
-  B115200bps=115200
+  //B14400bps= B14400, //WARNING: don't exist
+  B19200bps= B19200,
+  //B28800bps= B28800,	//WARNING: don't exist
+  B38400bps= B38400,
+  B57600bps= B57600,
+  B115200bps=B115200
 };
 
 class cArduino{
@@ -90,6 +93,99 @@ public:
 	char* getDeviceName(){
 		if(MODEMDEVICE==0)	findArduino();
 		return MODEMDEVICE;
+	}
+
+	/*
+	src1: http://students.mimuw.edu.pl/SO/LabLinux/STRUKTURY/WEJSCIE-WYJSCIE/termios.html
+	src2: http://publib.boulder.ibm.com/infocenter/zvm/v6r1/index.jsp?topic=/com.ibm.zvm.v610.edclv/rtcsis.htm
+	//9600bps, 8 data bits, no parity, one stop bit.
+	*/
+	void print_port(char *devName){
+		int ttyDevice =0;
+		if(fd>0)
+		ttyDevice = fd;
+		else
+		ttyDevice = ::open(devName, O_RDWR | O_NOCTTY);
+
+		if ( ! isatty(ttyDevice) )
+				return;
+		
+
+		struct termios term;
+
+		if (tcgetattr(ttyDevice, &term) != 0){
+			perror("tcgetatt() error");
+			return;
+		}
+		speed_t speed = cfgetispeed(&term);
+		if(fd<=0)
+		::close(ttyDevice);
+	
+		printf("%s: ",devName);
+
+		//SPEED
+		//--------------------------------
+		static char   SPEED[20];
+		switch (speed) {
+			case B0:       strcpy(SPEED, "0");      break;
+			case B50:      strcpy(SPEED, "50");      break;
+			case B75:      strcpy(SPEED, "75");      break;
+			case B110:     strcpy(SPEED, "110");      break;
+			case B134:     strcpy(SPEED, "134");      break;
+			case B150:     strcpy(SPEED, "150");      break;
+			case B200:     strcpy(SPEED, "200");      break;
+			case B300:     strcpy(SPEED, "300");      break;
+			case B600:     strcpy(SPEED, "600");      break;
+			case B1200:    strcpy(SPEED, "1200");      break;
+			case B1800:    strcpy(SPEED, "1800");      break;
+			case B2400:    strcpy(SPEED, "2400");      break;
+			case B4800:    strcpy(SPEED, "4800");       break;
+			case B9600:    strcpy(SPEED, "9600");       break;
+			case B57600:   strcpy(SPEED, "7600");       break;
+			case B19200:   strcpy(SPEED, "19200");      break;
+			case B38400:   strcpy(SPEED, "38400");      break;
+			case B115200:  strcpy(SPEED, "115200");     break;
+			case B230400:  strcpy(SPEED, "230400");     break;
+			case B460800:  strcpy(SPEED, "460800");     break;
+			default:       sprintf(SPEED, "unknown (%d)", (int) speed);
+		  }
+
+			if (term.c_cflag & CBAUD)
+				  printf("%s bps, ",SPEED);
+			else
+				  printf("BAUND notset, ");
+		//--------------------------------
+
+		//DataBits
+		//----------------------------
+		switch(term.c_cflag&CSIZE)
+		{
+			case CS5:printf("5bits, ");break;
+			case CS6:printf("6bits, ");break;
+			case CS7:printf("7bits, ");break;
+			case CS8:printf("8bits, ");break;
+		}
+		//---------------------------
+
+		//Parity
+		//--------------------------------
+		if (term.c_cflag & PARODD)
+			  printf("Odd parity, ");
+		else
+			  printf("Even parity, ");
+		//--------------------------------
+
+
+		//Stop Bits
+		//--------------------------------
+		if (term.c_cflag & CSTOPB )
+			printf("two stop bit");
+		else
+			printf("one stop bit");
+		//------------------------------
+
+		printf("\n");
+		return;
 	}
 
 	/*Find Arduino device*/
@@ -144,9 +240,8 @@ public:
 	bool open(ArduinoBaundRate baundRate,char *DeviceFileName)
 	{
 		int c;
-		struct termios newtio;
 		
-		//TODO: po poprawy
+		
 		if(DeviceFileName==0) {
 			DeviceFileName = findArduino();			
 		}
@@ -166,6 +261,8 @@ public:
 		}
 
 		tcgetattr(fd,&oldtio); /* save current serial port settings */
+		
+		struct termios newtio;
 		bzero(&newtio, sizeof(newtio)); /* clear struct for new port settings */
 
 		/*
@@ -176,7 +273,17 @@ public:
 		CLOCAL  : local connection, no modem contol
 		CREAD   : enable receiving characters
 		*/
-		newtio.c_cflag =  baundRate | CRTSCTS | CS8 | CLOCAL | CREAD;
+		newtio.c_cflag =  	
+							baundRate | 
+							
+							CRTSCTS | //Ustawiona oznacza, że jest dostępna sprzętowa kontrola przepływu danych.
+							
+							CS8 | //(CSIZE) określenia rozmiaru znaku 8bit
+							
+							CLOCAL | //control local?
+							
+							CREAD	// można czytać
+							;
 
 		/*
 		IGNPAR  : ignore bytes with parity errors

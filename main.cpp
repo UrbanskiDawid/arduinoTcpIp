@@ -51,13 +51,13 @@ void* task_server_client(void *int_sock){
 	server.client_write(sock,(char*)powitanie.c_str());
 	server.client_write(sock,(char*)"\n>>");
 
-	while(true)
+	//while(true)
 	{
 		//odczytaj zapytanie
 		char *request=server.client_read(sock);
 		
 		if(request==0){ //disconect
-			break;
+			//break;
 		}
 
 		//dodaj do kolejki
@@ -204,6 +204,7 @@ int main (int argc, char **argv) {
 		perror("nie podloczono Arduino");
 		return 1;
 	}
+	printf("arduino: ");	ARDUINO->print_port(ARDUINO->getDeviceName());
 	//############################
 
 	//##
