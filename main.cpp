@@ -51,13 +51,13 @@ void* task_server_client(void *int_sock){
 	server.client_write(sock,(char*)powitanie.c_str());
 	server.client_write(sock,(char*)"\n>>");
 
-	//while(true)
+	while(true)
 	{
 		//odczytaj zapytanie
 		char *request=server.client_read(sock);
 		
 		if(request==0){ //disconect
-			//break;
+			break;
 		}
 
 		//dodaj do kolejki
@@ -198,6 +198,15 @@ void sighandler(int sig){
 int main (int argc, char **argv) {
 
 	//##
+	//sprawdz czy server uruchomiony
+	if(!server.isBinded())
+	{
+		perror("server problem");
+		return 1;
+	}
+	//##########################
+
+	//##
 	//sprawdz czy podloaczono arduino
 	if(ARDUINO->findArduino()==0)
 	{
@@ -206,15 +215,6 @@ int main (int argc, char **argv) {
 	}
 	printf("arduino: ");	ARDUINO->print_port(ARDUINO->getDeviceName());
 	//############################
-
-	//##
-	//sprawdz czy server uruchomiony
-	if(!server.isBinded())
-	{
-		perror("server problem");
-		return 1;
-	}
-	//##########################
 
 	signal(SIGABRT, &sighandler);
 	signal(SIGTERM, &sighandler);
