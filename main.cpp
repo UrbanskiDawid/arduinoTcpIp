@@ -188,8 +188,6 @@ void sighandler(int sig){
 		server.stop();
 		
 		ARDUINO->close();
-
-		closelog();
 		
 	sleep(1);
 	exit(0);
