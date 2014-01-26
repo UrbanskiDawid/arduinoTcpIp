@@ -58,12 +58,12 @@ class cArduino{
 
 private:
 	/*serial port FileDescriptor*/
-	int fd=0;
+	int fd;
 
 	struct termios oldtio;
 
 	/*Arduino FileName*/
-	char *MODEMDEVICE =0;
+	char *MODEMDEVICE;
 public:
 
 	cArduino(){

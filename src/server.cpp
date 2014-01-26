@@ -22,11 +22,12 @@ class TcpSercer
 	}
 	
 	bool isRuning;
-	bool isBind=false;
+	bool isBind;
 
 public:
 	TcpSercer(int port,client_proc run)
 	{
+		isBind=false;
 		PORT=port;
 		ClientRun =run;
 
